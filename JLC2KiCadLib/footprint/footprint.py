@@ -46,6 +46,7 @@ class FootprintInfo:
     model_dir: str = ""
     origin: tuple = (0, 0)
     models: str = ""
+    kiprjmod: str = ""
 
     def has_crtyd_bounds(self):
         return (
@@ -63,6 +64,7 @@ def create_footprint(
     model_dir,
     skip_existing,
     models,
+    kiprjmod,
 ):
     logging.info("Creating footprint ...")
 
@@ -92,6 +94,7 @@ def create_footprint(
         model_dir=model_dir,
         origin=translation,
         models=models,
+        kiprjmod=kiprjmod,
     )
 
     # for each line in data : use the appropriate handler
@@ -187,6 +190,20 @@ def create_footprint(
                 footprint_info.max_Y + 2,
             ],
             layer="F.Fab",
+        )
+    )
+
+    # append JLCPCB id
+
+    kicad_mod.append(
+        Text(
+            type="user",
+            text=component_id,
+            at=[
+                (footprint_info.min_X + footprint_info.max_X) / 2,
+                footprint_info.max_Y + 4,
+            ],
+            layer="F.SilkS",
         )
     )
 

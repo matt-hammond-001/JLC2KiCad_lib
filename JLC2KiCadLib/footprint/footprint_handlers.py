@@ -3,19 +3,8 @@ import logging
 import re
 from math import acos, cos, pi, pow, radians, sin, sqrt
 
-from KicadModTree import (
-    Arc,
-    Circle,
-    Line,
-    Pad,
-    Polygon,
-    RectFill,
-    RectLine,
-    Text,
-    Vector2D,
-)
-
-from .model3d import get_StepModel, get_WrlModel
+from KicadModTree import *
+from .model3d import get_3DModel
 
 __all__ = [
     "handlers",
@@ -617,27 +606,35 @@ def h_SVGNODE(data, kicad_mod, footprint_info):
         return ()
 
     c_origin = data["attrs"]["c_origin"].split(",")
-    if "STEP" in footprint_info.models:
-        get_StepModel(
-            component_uuid=data["attrs"]["uuid"],
-            footprint_info=footprint_info,
-            kicad_mod=kicad_mod,
-            translationX=float(c_origin[0]),
-            translationY=float(c_origin[1]),
-            translationZ=data["attrs"]["z"],
-            rotation=data["attrs"]["c_rotation"],
-        )
 
-    if "WRL" in footprint_info.models:
-        get_WrlModel(
-            component_uuid=data["attrs"]["uuid"],
-            footprint_info=footprint_info,
-            kicad_mod=kicad_mod,
-            translationX=float(c_origin[0]),
-            translationY=float(c_origin[1]),
-            translationZ=data["attrs"]["z"],
-            rotation=data["attrs"]["c_rotation"],
-        )
+    # get center:
+    point1x = data["childNodes"][0]["attrs"]["points"].split(" ")[0]
+    point1y = data["childNodes"][0]["attrs"]["points"].split(" ")[1]
+    x_max = float(point1x)
+    x_min = float(point1x)
+    y_max = float(point1y)
+    y_min = float(point1y)
+
+    for i in range(2, len(data["childNodes"][0]["attrs"]["points"].split(" ")),2):
+        pointx = data["childNodes"][0]["attrs"]["points"].split(" ")[i]
+        pointy = data["childNodes"][0]["attrs"]["points"].split(" ")[i+1]
+        x_max = max(x_max, float(pointx))
+        x_min = min(x_min, float(pointx))
+        y_max = max(y_max, float(pointy))
+        y_min = min(y_min, float(pointy))
+
+    c_origin[0] = str((x_max + x_min) / 2)
+    c_origin[1] = str((y_max + y_min) / 2)
+
+    get_3DModel(
+        component_uuid=data["attrs"]["uuid"],
+        footprint_info=footprint_info,
+        kicad_mod=kicad_mod,
+        translationX=float(c_origin[0]),
+        translationY=float(c_origin[1]),
+        translationZ=data["attrs"]["z"],
+        rotation=data["attrs"]["c_rotation"],
+    )
 
 
 def h_VIA(data, kicad_mod, footprint_info):

@@ -43,6 +43,7 @@ def add_component(component_id, args):
             model_dir=args.model_dir,
             skip_existing=args.skip_existing,
             models=args.models,
+            kiprjmod=args.kiprjmod,
         )
     else:
         datasheet_link = ""
@@ -203,6 +204,14 @@ def main():
         action="version",
         version=f"%(prog)s {__version__}",
         help="Print version number and exit",
+    )
+
+    parser.add_argument(
+        "--kiprjmod",
+        dest="kiprjmod",
+        type=str,
+        default="",
+        help="set the path to the kicad project directory. Used for 3d model patch"
     )
 
     args = parser.parse_args()
